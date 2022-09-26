@@ -24,6 +24,6 @@ public class Question {
 
     private LocalDateTime createDate;
 
-    @OneToMany
+    @OneToMany(mappedBy = "question", cascade = CascadeType.REMOVE) // 괄호 안에 정의 안하면 데이터에서 못불러옴
     private List<Answer> answerList;
 }
