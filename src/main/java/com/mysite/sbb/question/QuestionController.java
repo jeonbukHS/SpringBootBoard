@@ -3,6 +3,7 @@ package com.mysite.sbb.question;
 import java.util.List;
 
 import com.mysite.sbb.answer.AnswerForm;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -20,9 +21,9 @@ public class QuestionController {
     private final QuestionService questionService;
 
     @RequestMapping("/list")
-    public String list(Model model) {
-        List<Question> questionList = this.questionService.getList();
-        model.addAttribute("questionList", questionList);
+    public String list(Model model, @RequestParam(value = "page", defaultValue = "0") int page) {
+        Page<Question> paging = this.questionService.getList(page);
+        model.addAttribute("paging", paging);
         return "question_list";
     }
     @RequestMapping(value = "/detail/{id}") // 검증 과정 때문에 answerForm 파라미터 추가, 값을 넣지 않아서 무작위 값이 들어가있을 것이며 null 체크 회피
