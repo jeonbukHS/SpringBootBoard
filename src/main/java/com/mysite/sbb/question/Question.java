@@ -1,6 +1,7 @@
 package com.mysite.sbb.question;
 
 import com.mysite.sbb.answer.Answer;
+import com.mysite.sbb.user.SiteUser;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -26,4 +27,7 @@ public class Question {
 
     @OneToMany(mappedBy = "question", cascade = CascadeType.REMOVE) // 괄호 안에 정의 안하면 데이터에서 못불러옴
     private List<Answer> answerList;
+
+    @ManyToOne
+    private SiteUser author;
 }
