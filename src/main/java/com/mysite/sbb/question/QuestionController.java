@@ -1,12 +1,12 @@
 package com.mysite.sbb.question;
 
 import java.security.Principal;
-import java.util.List;
 
 import com.mysite.sbb.answer.AnswerForm;
 import com.mysite.sbb.user.SiteUser;
 import com.mysite.sbb.user.UserService;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -14,6 +14,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.validation.Valid;
 
@@ -39,7 +40,7 @@ public class QuestionController {
     }
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/create")   //원래는 파라미터 없었지만, form 검증 기능 도입 후 questionForm 추가, 그냥 객체만 생성한 상태이므로 랜덤한 값 들어가 있을 듯 -> null 체크 회피
-    public String qustionCreate(QuestionForm questionForm){
+    public String questionCreate(QuestionForm questionForm){
         return "question_form";
     }
     // 원래는 @RequestParam String subject, @RequestParam String content 로 받아와서 바로 입력하는 방식
@@ -50,7 +51,7 @@ public class QuestionController {
 
     @PreAuthorize("isAuthenticated()")
     @PostMapping("/create")
-    public String qustionCreate(@Valid QuestionForm questionForm, BindingResult bindingResult, Principal principal){
+    public String questionCreate(@Valid QuestionForm questionForm, BindingResult bindingResult, Principal principal){
         if (bindingResult.hasErrors()){
             return "question_form";
         }
@@ -58,4 +59,41 @@ public class QuestionController {
         this.questionService.create(questionForm.getSubject(), questionForm.getContent(), siteUser);
         return "redirect:/question/list"; //질문 저장 후 목록으로 이동
     }
+
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/modify/{id}")
+    public String questionModify(QuestionForm questionForm, @PathVariable("id") Integer id, Principal principal) {
+        Question question = this.questionService.getQuestion(id);
+        if(!question.getAuthor().getUsername().equals(principal.getName())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "수정권한이 없습니다.");
+        }
+        questionForm.setSubject(question.getSubject());
+        questionForm.setContent(question.getContent());
+        return "question_form";
+    }
+    @PreAuthorize("isAuthenticated()")
+    @PostMapping("/modify/{id}")
+    public String questionModify(@Valid QuestionForm questionForm, BindingResult bindingResult, Principal principal, @PathVariable("id") Integer id){
+        if(bindingResult.hasErrors()){
+            return "question_form";
+        }
+        Question question = this.questionService.getQuestion(id);
+        if(!question.getAuthor().getUsername().equals(principal.getName())){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "수정권한이 없습니다.");
+        }
+        this.questionService.modify(question, questionForm.getSubject(), questionForm.getContent());
+        return String.format("redirect:/question/detail/%s", id);
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/delete/{id}")
+    public String questionDelete(Principal principal, @PathVariable("id") Integer id){
+        Question question = this.questionService.getQuestion(id);
+        if(!question.getAuthor().getUsername().equals(principal.getName())){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "삭제권한이 없습니다.");
+        }
+        this.questionService.delete(question);
+        return "redirect:/";
+    }
+
 }
