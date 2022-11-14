@@ -31,6 +31,8 @@ public class QuestionController {
     public String list(Model model, @RequestParam(value = "page", defaultValue = "0") int page) {
         Page<Question> paging = this.questionService.getList(page);
         model.addAttribute("paging", paging);
+        String test = "Test Text";
+        model.addAttribute("test", test);
         return "question_list";
     }
     @RequestMapping(value = "/detail/{id}") // 검증 과정 때문에 answerForm 파라미터 추가, 값을 넣지 않아서 무작위 값이 들어가있을 것이며 null 체크 회피
@@ -53,7 +55,7 @@ public class QuestionController {
     @PreAuthorize("isAuthenticated()")
     @PostMapping("/create")
     public String questionCreate(@Valid QuestionForm questionForm, BindingResult bindingResult, Principal principal){
-        if (bindingResult.hasErrors()){
+        if (bindingResult.hasErrors()){ // 폼 형식에 문제가 있을 경우
             return "question_form";
         }
         SiteUser siteUser = this.userService.getUser(principal.getName());

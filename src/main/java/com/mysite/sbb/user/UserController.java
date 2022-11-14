@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import javax.validation.Valid;
+import java.security.Principal;
 
 @Controller
 @RequiredArgsConstructor
@@ -23,6 +24,12 @@ public class UserController {
     @GetMapping("/login")
     public String login(){
         return "login_form";
+    }
+
+    @GetMapping("/update")
+    public String updateUser(Principal principal){
+
+        return "user_update";
     }
 
     @PostMapping("/signup")
